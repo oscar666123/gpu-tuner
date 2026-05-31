@@ -23,6 +23,7 @@ export default function Layout<T extends string>({ navItems, activeKey, onNaviga
           <div className="brand-mark">GT</div>
           <div>
             <h1>GPU Tuner</h1>
+            <p className="brand-author">by oscar666123</p>
             <p>{gpus.length > 0 ? `${gpus.length} NVIDIA GPU` : "NVIDIA Control"}</p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "GPU Tuner",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "identifier": "com.gputuner.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -26,6 +26,8 @@
   "bundle": {
     "active": true,
     "targets": ["nsis", "msi"],
+    "publisher": "oscar666123",
+    "homepage": "https://github.com/oscar666123/gpu-tuner",
     "icon": ["icons/icon.ico"],
     "windows": {
       "wix": {

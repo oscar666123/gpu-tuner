@@ -82,6 +82,10 @@ select:disabled {
   font-size: 18px;
 }
 
+.brand-author {
+  font-size: 12px;
+}
+
 .brand p,
 .eyebrow,
 .section-title span,
