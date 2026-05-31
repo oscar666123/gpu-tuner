@@ -66,6 +66,8 @@ export interface Profile {
   name: string;
   gpu_index: number;
   power_limit_watts: number | null;
+  core_clock_mhz: number | null;
+  memory_clock_mhz: number | null;
   core_clock_offset_mhz: number | null;
   memory_clock_offset_mhz: number | null;
   created_at: string;

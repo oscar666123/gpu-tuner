@@ -15,6 +15,8 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [name, setName] = useState("");
   const [powerLimit, setPowerLimit] = useState<number | null>(null);
+  const [coreClock, setCoreClock] = useState<number | null>(null);
+  const [memoryClock, setMemoryClock] = useState<number | null>(null);
   const [coreOffset, setCoreOffset] = useState(0);
   const [memoryOffset, setMemoryOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -30,10 +32,9 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
   }, [onNotify]);
 
   useEffect(() => {
-    api
-      .getTelemetry(gpuIndex)
-      .then((telemetry) => setPowerLimit(Math.round(telemetry.power_limit_watts)))
-      .catch(() => setPowerLimit(null));
+    setPowerLimit(null);
+    setCoreClock(null);
+    setMemoryClock(null);
   }, [gpuIndex]);
 
   const activeGpu = useMemo(() => gpus.find((gpu) => gpu.index === gpuIndex), [gpus, gpuIndex]);
@@ -44,6 +45,8 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
       name: name.trim(),
       gpu_index: gpuIndex,
       power_limit_watts: powerLimit,
+      core_clock_mhz: coreClock,
+      memory_clock_mhz: memoryClock,
       core_clock_offset_mhz: coreOffset,
       memory_clock_offset_mhz: memoryOffset,
       created_at: now,
@@ -68,6 +71,8 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
   const loadForApply = async (profile: Profile) => {
     setName(profile.name);
     setPowerLimit(profile.power_limit_watts);
+    setCoreClock(profile.core_clock_mhz ?? null);
+    setMemoryClock(profile.memory_clock_mhz ?? null);
     setCoreOffset(profile.core_clock_offset_mhz ?? 0);
     setMemoryOffset(profile.memory_clock_offset_mhz ?? 0);
     setPendingProfile(profile);
@@ -80,8 +85,8 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
       const result = await api.applyTuning({
         gpu_index: pendingProfile.gpu_index,
         power_limit_watts: pendingProfile.power_limit_watts,
-        core_clock_mhz: null,
-        memory_clock_mhz: null,
+        core_clock_mhz: pendingProfile.core_clock_mhz,
+        memory_clock_mhz: pendingProfile.memory_clock_mhz,
         core_clock_offset_mhz: pendingProfile.core_clock_offset_mhz,
         memory_clock_offset_mhz: pendingProfile.memory_clock_offset_mhz
       });
@@ -140,6 +145,22 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
             />
           </label>
           <label>
+            Core Clock MHz
+            <input
+              type="number"
+              value={coreClock ?? ""}
+              onChange={(event) => setCoreClock(event.target.value === "" ? null : Number(event.target.value))}
+            />
+          </label>
+          <label>
+            Memory Clock MHz
+            <input
+              type="number"
+              value={memoryClock ?? ""}
+              onChange={(event) => setMemoryClock(event.target.value === "" ? null : Number(event.target.value))}
+            />
+          </label>
+          <label>
             Core Clock Offset MHz
             <input type="number" value={coreOffset} min={-200} max={300} onChange={(event) => setCoreOffset(Number(event.target.value))} />
           </label>
@@ -166,8 +187,9 @@ export default function Profiles({ gpuIndex, gpus, onGpuChange, onNotify }: Prof
               <div>
                 <strong>{profile.name}</strong>
                 <span>
-                  GPU {profile.gpu_index} | {profile.power_limit_watts ?? "--"} W | Core {profile.core_clock_offset_mhz ?? 0} MHz |
-                  Mem {profile.memory_clock_offset_mhz ?? 0} MHz
+                  GPU {profile.gpu_index} | {profile.power_limit_watts ?? "--"} W | Core Lock {profile.core_clock_mhz ?? "--"} MHz |
+                  Mem Lock {profile.memory_clock_mhz ?? "--"} MHz | Core Offset {profile.core_clock_offset_mhz ?? 0} MHz | Mem Offset{" "}
+                  {profile.memory_clock_offset_mhz ?? 0} MHz
                 </span>
               </div>
               <div className="mini-actions">

@@ -9,6 +9,8 @@ pub struct Profile {
     pub name: String,
     pub gpu_index: u32,
     pub power_limit_watts: Option<f64>,
+    pub core_clock_mhz: Option<u32>,
+    pub memory_clock_mhz: Option<u32>,
     pub core_clock_offset_mhz: Option<i32>,
     pub memory_clock_offset_mhz: Option<i32>,
     pub created_at: String,
