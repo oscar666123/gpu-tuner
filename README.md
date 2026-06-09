@@ -1,5 +1,7 @@
 # GPU Tuner
 
+<img src="assets/gpu-tuner-icon.png" alt="GPU Tuner icon" width="180" />
+
 GPU Tuner is a Windows desktop application by **oscar666123** for monitoring NVIDIA GPUs and applying guarded tuning settings.
 
 中文文档: [README.zh-CN.md](README.zh-CN.md)

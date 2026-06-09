@@ -1,5 +1,7 @@
 # GPU Tuner
 
+<img src="assets/gpu-tuner-icon.png" alt="GPU Tuner 图标" width="180" />
+
 GPU Tuner 是 **oscar666123** 开发的 Windows 桌面应用，用于查看 NVIDIA 显卡状态并安全地应用常见调参项。
 
 English documentation: [README.md](README.md)
