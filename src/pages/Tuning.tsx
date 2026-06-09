@@ -25,6 +25,7 @@ export default function Tuning({ gpuIndex, gpus, onGpuChange, onNotify }: Tuning
   const [memoryOffsetEnabled, setMemoryOffsetEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -105,6 +106,7 @@ export default function Tuning({ gpuIndex, gpus, onGpuChange, onNotify }: Tuning
     try {
       const result = await api.resetGpuSettings(gpuIndex);
       const telemetry = await api.getTelemetry(gpuIndex);
+      setPowerLimit(Math.round(telemetry.power_limit_watts));
       setCoreClock(telemetry.core_clock_mhz);
       setMemoryClock(telemetry.memory_clock_mhz);
       setCoreOffset(0);
@@ -119,6 +121,7 @@ export default function Tuning({ gpuIndex, gpus, onGpuChange, onNotify }: Tuning
       onNotify({ tone: "error", message: String(err) });
     } finally {
       setLoading(false);
+      setConfirmResetOpen(false);
     }
   };
 
@@ -206,8 +209,8 @@ export default function Tuning({ gpuIndex, gpus, onGpuChange, onNotify }: Tuning
           onChange={(value) => setMemoryOffset(clamp(value, limits.memMin, limits.memMax))}
         />
         <div className="actions">
-          <button className="button subtle" type="button" onClick={reset} disabled={loading}>
-            Reset
+          <button className="button danger" type="button" onClick={() => setConfirmResetOpen(true)} disabled={loading}>
+            Restore All Defaults
           </button>
           <button className="button primary" type="button" onClick={() => setConfirmOpen(true)} disabled={loading}>
             Apply
@@ -230,6 +233,14 @@ export default function Tuning({ gpuIndex, gpus, onGpuChange, onNotify }: Tuning
         busy={loading}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={apply}
+      />
+      <ConfirmDialog
+        open={confirmResetOpen}
+        title="Restore all defaults"
+        message="Power limit, locked clocks, and clock offsets will be restored to NVIDIA driver defaults for the selected GPU."
+        busy={loading}
+        onCancel={() => setConfirmResetOpen(false)}
+        onConfirm={reset}
       />
     </div>
   );

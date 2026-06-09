@@ -136,6 +136,21 @@ impl Nvml {
         }
     }
 
+    pub fn default_power_limit(&self, index: u32) -> Result<f64, String> {
+        let device = self.device(index)?;
+        unsafe {
+            let func: libloading::Symbol<
+                unsafe extern "C" fn(NvmlDevice, *mut c_uint) -> NvmlReturn,
+            > = self
+                .lib
+                .get(b"nvmlDeviceGetPowerManagementDefaultLimit\0")
+                .map_err(|error| format!("Default power limit query is unavailable: {error}"))?;
+            let mut milliwatts = 0;
+            self.check(func(device, &mut milliwatts), "get default power limit")?;
+            Ok(mw_to_watts(milliwatts))
+        }
+    }
+
     pub fn supported_memory_clocks(&self, index: u32) -> Result<Vec<u32>, String> {
         let device = self.device(index)?;
         unsafe {

@@ -424,10 +424,32 @@ pub fn set_memory_clock_offset(gpu_index: u32, offset_mhz: i32) -> Result<bool, 
 pub fn reset_gpu_settings(gpu_index: u32) -> Result<TuningResult, String> {
     let mut messages = Vec::new();
     let mut reset_count = 0;
+    let mut power_limit_reset = false;
+    let mut core_clock_reset = false;
+    let mut memory_clock_reset = false;
+    let mut offset_reset = false;
+
+    match nvml::Nvml::new().and_then(|nvml| {
+        let default_power_limit = nvml.default_power_limit(gpu_index)?;
+        nvml.set_power_limit(gpu_index, default_power_limit)?;
+        Ok(default_power_limit)
+    }) {
+        Ok(default_power_limit) => {
+            reset_count += 1;
+            power_limit_reset = true;
+            messages.push(format!(
+                "Power limit restored to default {default_power_limit:.1} W."
+            ));
+        }
+        Err(error) => {
+            messages.push(format!("Power limit default restore failed: {error}"));
+        }
+    }
 
     match nvml::Nvml::new().and_then(|nvml| nvml.reset_gpu_locked_clocks(gpu_index)) {
         Ok(_) => {
             reset_count += 1;
+            core_clock_reset = true;
             messages.push("GPU locked clocks reset through NVML.".to_string());
         }
         Err(error) => {
@@ -438,6 +460,7 @@ pub fn reset_gpu_settings(gpu_index: u32) -> Result<TuningResult, String> {
     match nvml::Nvml::new().and_then(|nvml| nvml.reset_memory_locked_clocks(gpu_index)) {
         Ok(_) => {
             reset_count += 1;
+            memory_clock_reset = true;
             messages.push("Memory locked clocks reset through NVML.".to_string());
         }
         Err(error) => {
@@ -451,6 +474,7 @@ pub fn reset_gpu_settings(gpu_index: u32) -> Result<TuningResult, String> {
     {
         Ok(_) => {
             reset_count += 1;
+            offset_reset = true;
             messages.push("Clock offsets reset.".to_string());
         }
         Err(error) => {
@@ -460,11 +484,11 @@ pub fn reset_gpu_settings(gpu_index: u32) -> Result<TuningResult, String> {
 
     Ok(TuningResult {
         success: reset_count > 0,
-        applied_power_limit: false,
-        applied_core_clock: false,
-        applied_memory_clock: false,
-        applied_core_clock_offset: false,
-        applied_memory_clock_offset: false,
+        applied_power_limit: power_limit_reset,
+        applied_core_clock: core_clock_reset,
+        applied_memory_clock: memory_clock_reset,
+        applied_core_clock_offset: offset_reset,
+        applied_memory_clock_offset: offset_reset,
         messages,
     })
 }
